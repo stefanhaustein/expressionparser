@@ -445,6 +445,7 @@ public class ExpressionParser<T> {
         "\\G\\s*(\"([^\"\\\\]*(\\\\.[^\"\\\\]*)*)\"|'([^'\\\\]*(\\\\.[^'\\\\]*)*)')");
     public static final Pattern DEFAULT_END_PATTERN = Pattern.compile("\\G\\s*\\Z");
 
+
     public enum TokenType {
       UNRECOGNIZED, BOF, IDENTIFIER, SYMBOL, NUMBER, STRING, EOF
     }
@@ -487,6 +488,10 @@ public class ExpressionParser<T> {
       symbolPattern = Pattern.compile(sb.toString());
     }
 
+    public int currentColumn() {
+      return  currentPosition - lastLineStart + 1;
+    }
+
     public TokenType consume(String expected) {
       if (!tryConsume(expected)) {
         throw exception("Expected: '" + expected + "'.", null);
@@ -505,10 +510,9 @@ public class ExpressionParser<T> {
 
 
     public ParsingException exception(String message, Exception cause) {
-      int column = currentPosition - lastLineStart + 1;
-      return new ParsingException(message
-          + " Position: " + currentLine + ":" + column + " (" + currentPosition + ") Token: '" + currentValue + "' Type: " + currentType,
-          currentPosition, currentLine, column, cause);
+      return new ParsingException(message + " Position: " + currentLine + ":" + currentColumn()
+          + " (" + currentPosition + ") Token: '" + currentValue + "' Type: " + currentType,
+          currentPosition, currentLine, currentColumn(), cause);
     }
 
     public TokenType nextToken() {
