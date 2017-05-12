@@ -1,5 +1,7 @@
-apply plugin: 'java'
 apply plugin: 'application'
+apply plugin: 'java'
+apply plugin: 'maven'
+
 
 mainClassName = "org.kobjects.expressionparser.demo.cas.CasDemo"
 
