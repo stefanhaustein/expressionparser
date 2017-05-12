@@ -1,0 +1,1 @@
+include "core", "demo:basic", "demo:cas", "demo:calculator", "demo:sets"

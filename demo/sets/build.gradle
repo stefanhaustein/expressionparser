@@ -1,0 +1,15 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+sourceCompatibility = 1.8 // java 8
+targetCompatibility = 1.8
+
+mainClassName = "org.kobjects.expressionparser.demo.sets.SetDemo"
+
+run {
+  standardInput = System.in
+}
+
+dependencies {
+  compile project(':core')
+}

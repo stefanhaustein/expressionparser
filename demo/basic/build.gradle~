@@ -1,0 +1,7 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = "org.kobjects.expressionparser.demo.basic.Basic"
+
+sourceCompatibility = 1.8 // java 8
+targetCompatibility = 1.8
