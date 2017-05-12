@@ -1,11 +1,32 @@
 
-A simple [single-file](src/main/java/org/kobjects/expressionparser/ExpressionParser.java) configurable Java parser for mathematical expressions.
+A simple [single-file](core/src/main/java/org/kobjects/expressionparser/ExpressionParser.java) configurable Java parser for mathematical expressions.
+
+# Gradle Build Integration
+
+Jitpack for the win!
+
+Step 1: Add jitpack to your root build.gradle at the end of repositories:
+
+    allprojects {
+		    repositories {
+			  ...
+			  maven { url 'https://jitpack.io' }
+		    }
+	    }
+
+Step 2: Add the HtmlView2 dependency
+
+	dependencies {
+		compile 'com.github.stefanhaustein.expressionparser:core:1.0.0'
+	}
+
+
 
 # Examples and Demos
 
 ## Immediate evaluation
 
-[Calculator.java](src/main/java/org/kobjects/expressionparser/demo/calculator/Calculator.java) in the demo package contains a simple self-contained use case directly interpreting the input.
+[Calculator.java](demos/calculator/src/main/java/org/kobjects/expressionparser/demo/calculator/Calculator.java) in the demo package contains a simple self-contained use case directly interpreting the input.
 
 The parser configuration supports simple mathematical expressions, and the processor just evaluates them immediately, without constructing an intermediate tree representation.
 
@@ -14,7 +35,7 @@ Expression? 5+2*-2^3^2
 Result:     -1019.0
 ```
 
-[SetDemo.java](src/main/java/org/kobjects/expressionparser/demo/sets/SetDemo.java) is similar to the calculator demo,
+[SetDemo.java](demos/sets/src/main/java/org/kobjects/expressionparser/demo/sets/SetDemo.java) is similar to the calculator demo,
 but illustrates the flexibility of the expression parser with a slightly more "atypical" expression language.
 
 Example output from [SetDemo.java]:
@@ -33,7 +54,7 @@ Result:     2
 
 ## Tree building
 
-[TreeBuilder.java](src/main/java/org/kobjects/expressionparser/demo/cas/TreeBuilder.java) shows how to builds a tree from the input (using a [node factory](src/main/java/org/kobjects/expressionparser/demo/cas/tree/NodeFactory.java). The corresponding [demo app](src/main/java/org/kobjects/expressionparser/demo/cas/) is able to do simplifications and to compute the symbolic derivative. An extended tokenizer translates superscript digits.
+[TreeBuilder.java](demos/cas/src/main/java/org/kobjects/expressionparser/demo/cas/TreeBuilder.java) shows how to builds a tree from the input (using a [node factory](demos/cas/src/main/java/org/kobjects/expressionparser/demo/cas/tree/NodeFactory.java). The corresponding [demo app](demos/cas/src/main/java/org/kobjects/expressionparser/demo/cas/) is able to do simplifications and to compute the symbolic derivative. An extended tokenizer translates superscript digits.
 
 ```
 Input?  derive(1/x, x)
@@ -62,7 +83,7 @@ Flat:   -1/x²
 
 ## Integration with a "main" parser
 
-The [BASIC demo parser](src/main/java/org/kobjects/expressionparser/demo/basic/Parser.java) is able to parse 70's BASIC programs. The rest of the [BASIC demo directory](src/main/java/org/kobjects/expressionparser/demo/basic/) contains some code to run them.
+The [BASIC demo parser](demos/basic/src/main/java/org/kobjects/expressionparser/demo/basic/Parser.java) is able to parse 70's BASIC programs. The rest of the [BASIC demo directory](src/main/java/org/kobjects/expressionparser/demo/basic/) contains some code to run them.
 
 ```
   **** EXPRESSION PARSER BASIC DEMO V1 ****
