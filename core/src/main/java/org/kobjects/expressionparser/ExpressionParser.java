@@ -14,17 +14,17 @@ import java.util.regex.Pattern;
 /**
  * A simple configurable expression parser.
  */
-public class ExpressionParser<T> {
+public class ExpressionParser<T, C> {
 
   /**
    * Called by the expression parser, needs to be implemented by the user. May process
    * the expressions directly or build a tree. Abstract class instead of an interface
    * to avoid the need to implement methods that never trigger for a given syntax.
    */
-  public static class Processor<T> {
+  public static class Processor<T, C> {
 
     /** Called when an argument list with the given base, opening bracket and elements is parsed. */
-    public T apply(Tokenizer tokenizer, T base, String bracket, List<T> arguments) {
+    public T apply(C context, Tokenizer tokenizer, T base, String bracket, List<T> arguments) {
       throw new UnsupportedOperationException(
           "apply(" + base+ ", " + bracket + ", " + arguments + ")");
     }
@@ -33,50 +33,50 @@ public class ExpressionParser<T> {
      * Called when a bracket registered for calls following an identifier is parsed.
      * Useful to avoid apply() in simple cases, see calculator example.
      */
-    public T call(Tokenizer tokenizer, String identifier, String bracket, List<T> arguments) {
+    public T call(C context, Tokenizer tokenizer, String identifier, String bracket, List<T> arguments) {
       throw new UnsupportedOperationException(
           "call(" + identifier + ", " + bracket + ", " + arguments + ")");
     }
 
     /** Called when a group with the given opening bracket and elements is parsed. */
-    public T group(Tokenizer tokenizer, String paren, List<T> elements) {
+    public T group(C context, Tokenizer tokenizer, String paren, List<T> elements) {
       throw new UnsupportedOperationException("group(" + paren + ", " + elements + ')');
     }
 
     /** Called when the given identifier is parsed. */
-    public T identifier(Tokenizer tokenizer, String name) {
+    public T identifier(C context, Tokenizer tokenizer, String name) {
       throw new UnsupportedOperationException("identifier(" + name + ')');
     }
 
     /** Called when an implicit operator is parsed. */
-    public T implicitOperator(Tokenizer tokenizer, boolean strong, T left, T right) {
+    public T implicitOperator(C context, Tokenizer tokenizer, boolean strong, T left, T right) {
       throw new UnsupportedOperationException("implicitOperator(" + left + ", " + right + ')');
     }
 
     /** Called when an infix operator with the given name is parsed. */
-    public T infixOperator(Tokenizer tokenizer, String name, T left, T right) {
+    public T infixOperator(C context, Tokenizer tokenizer, String name, T left, T right) {
       throw new UnsupportedOperationException("infixOperator(" + name + ", " + left + ", " + right + ')');
     }
 
     /** Called when the given number literal is parsed. */
-    public T numberLiteral(Tokenizer tokenizer, String value) {
+    public T numberLiteral(C context, Tokenizer tokenizer, String value) {
       throw new UnsupportedOperationException("numberLiteral(" + value + ")");
     }
 
     /** Called when a prefix operator with the given name is parsed. */
-    public T prefixOperator(Tokenizer tokenizer, String name, T argument) {
+    public T prefixOperator(C context, Tokenizer tokenizer, String name, T argument) {
       throw new UnsupportedOperationException("prefixOperator(" + name + ", " + argument + ')');
     }
 
     /**
      * Called when a primary symbol is parsed (e.g. the empty set symbol in the set demo).
      */
-    public T primary(Tokenizer tokenizer, String name) {
+    public T primary(C context, Tokenizer tokenizer, String name) {
       throw new UnsupportedOperationException("primary(" + name + ", " + tokenizer + ")");
     }
 
     /** Called when a suffix operator with the given name is parsed. */
-    public T suffixOperator(Tokenizer tokenizer, String name, T argument) {
+    public T suffixOperator(C context, Tokenizer tokenizer, String name, T argument) {
       throw new UnsupportedOperationException("suffixOperator(" + name + ", " + argument + ')');
     }
 
@@ -85,14 +85,14 @@ public class ExpressionParser<T> {
      * The string is handed in in its original quoted form; use ExpressionParser.unquote()
      * to unquote and unescape the string.
      */
-    public T stringLiteral(Tokenizer tokenizer, String value) {
+    public T stringLiteral(C context, Tokenizer tokenizer, String value) {
       throw new UnsupportedOperationException("stringLiteral(" + value + ')');
     }
 
     /**
      * Called for ternaryOperator operators.
      */
-    public T ternaryOperator(Tokenizer tokenizer, String operator, T left, T middle, T right) {
+    public T ternaryOperator(C context, Tokenizer tokenizer, String operator, T left, T middle, T right) {
       throw new UnsupportedOperationException("ternaryOperator(" + operator + ')');
     }
   }
@@ -107,7 +107,7 @@ public class ExpressionParser<T> {
   private final HashMap<String, Boolean> allSymbols = new HashMap<>();
 
   private final ArrayList<Operators> precedenceList = new ArrayList<>();
-  private final Processor<T> processor;
+  private final Processor<T, C> processor;
   private int strongImplicitOperatorPrecedence = -1;
   private int weakImplicitOperatorPrecedence = -1;
 
@@ -134,7 +134,7 @@ public class ExpressionParser<T> {
     return sb.toString();
   }
 
-  public ExpressionParser(Processor<T> processor) {
+  public ExpressionParser(Processor<T, C> processor) {
     this.processor = processor;
   }
 
@@ -160,10 +160,9 @@ public class ExpressionParser<T> {
    * separation. Used for parsing lists or overriding the operator precedence (typically with
    * parens and a null separator).
    */
-  public ExpressionParser<T> addGroupBrackets(String open, String separator, String close) {
+  public void addGroupBrackets(String open, String separator, String close) {
     groups.put(addSymbol(open, true),
         new String[] {addSymbol(separator, false), addSymbol(close, false)});
-    return this;
   }
 
   public void addPrimary(String... names) {
@@ -228,10 +227,10 @@ public class ExpressionParser<T> {
    * Parser the given expression using a simple StreamTokenizer-based parser.
    * Leftover tokens will cause an exception.
    */
-  public T parse(String expr) {
+  public T parse(C context, String expr) {
     Tokenizer tokenizer = new Tokenizer(new Scanner(expr), getSymbols());
     tokenizer.nextToken();
-    T result = parse(tokenizer);
+    T result = parse(context, tokenizer);
     if (tokenizer.currentType != Tokenizer.TokenType.EOF) {
       throw tokenizer.exception("Leftover input.", null);
     }
@@ -242,9 +241,9 @@ public class ExpressionParser<T> {
    * Parser an expression from the given tokenizer. Leftover tokens will be ignored and
    * may be handled by the caller.
    */
-  public T parse(Tokenizer tokenizer) {
+  public T parse(C context, Tokenizer tokenizer) {
     try {
-      return parseOperator(tokenizer, 0);
+      return parseOperator(context, tokenizer, 0);
     } catch (ParsingException e) {
       throw e;
     } catch (Exception e) {
@@ -252,9 +251,9 @@ public class ExpressionParser<T> {
     }
   }
 
-  private T parseOperator(Tokenizer tokenizer, int precedence) {
+  private T parseOperator(C context, Tokenizer tokenizer, int precedence) {
     if (precedence >= precedenceList.size()) {
-      return parsePrimary(tokenizer);
+      return parsePrimary(context, tokenizer);
     }
     Operators operators = operators(precedence);
 
@@ -263,11 +262,11 @@ public class ExpressionParser<T> {
     String candidate = tokenizer.currentValue;
     if (operators.get(OperatorType.PREFIX).contains(candidate)) {
       tokenizer.nextToken();
-      return processor.prefixOperator(tokenizer, candidate, parseOperator(tokenizer, precedence));
+      return processor.prefixOperator(context, tokenizer, candidate, parseOperator(context, tokenizer, precedence));
     }
 
     // Recursion
-    T result = parseOperator(tokenizer, precedence + 1);
+    T result = parseOperator(context, tokenizer, precedence + 1);
 
     // Infix (including implicit)
 
@@ -275,8 +274,8 @@ public class ExpressionParser<T> {
 
     if (operators.get(OperatorType.INFIX_RTL).contains(candidate)) {
       tokenizer.nextToken();
-      return processor.infixOperator(tokenizer, candidate, result,
-          parseOperator(tokenizer, precedence));
+      return processor.infixOperator(context, tokenizer, candidate, result,
+          parseOperator(context, tokenizer, precedence));
     }
 
     // The complex implicit operator check is intended to prevent it from consuming
@@ -293,12 +292,12 @@ public class ExpressionParser<T> {
             allSymbols.get(candidate) != Boolean.FALSE))) {
       if (operators.get(OperatorType.INFIX).contains(candidate)) {
         tokenizer.nextToken();
-        T right = parseOperator(tokenizer, precedence + 1);
-        result = processor.infixOperator(tokenizer, candidate, result, right);
+        T right = parseOperator(context, tokenizer, precedence + 1);
+        result = processor.infixOperator(context, tokenizer, candidate, result, right);
       } else {
         boolean strong = tokenizer.leadingWhitespace.isEmpty();
-        T right = parseOperator(tokenizer, precedence + 1);
-        result = processor.implicitOperator(tokenizer, strong, result, right);
+        T right = parseOperator(context, tokenizer, precedence + 1);
+        result = processor.implicitOperator(context, tokenizer, strong, result, right);
       }
       candidate = tokenizer.currentValue;
     }
@@ -306,10 +305,10 @@ public class ExpressionParser<T> {
     if (operators.ternary.containsKey(candidate)) {
       tokenizer.nextToken();
       String t2 = operators.ternary.get(candidate);
-      T middle = parse(tokenizer);
+      T middle = parse(context, tokenizer);
       tokenizer.consume(t2);
-      T right = parseOperator(tokenizer, precedence);
-      return processor.ternaryOperator(tokenizer, candidate, result, middle, right);
+      T right = parseOperator(context, tokenizer, precedence);
+      return processor.ternaryOperator(context, tokenizer, candidate, result, middle, right);
     }
 
     // Suffix
@@ -319,9 +318,9 @@ public class ExpressionParser<T> {
       tokenizer.nextToken();
       if (operators.apply.containsKey(candidate)) {
         String[] apply = operators.apply.get(candidate);
-        result = processor.apply(tokenizer, result, candidate, parseList(tokenizer, apply[0], apply[1]));
+        result = processor.apply(context, tokenizer, result, candidate, parseList(context, tokenizer, apply[0], apply[1]));
       } else {
-        result = processor.suffixOperator(tokenizer, candidate, result);
+        result = processor.suffixOperator(context, tokenizer, candidate, result);
       }
       candidate = tokenizer.currentValue;
     }
@@ -330,11 +329,11 @@ public class ExpressionParser<T> {
 
   // Precondition: Opening paren consumed
   // Postcondition: Closing paren consumed
-  List<T> parseList(Tokenizer tokenizer, String separator, String close) {
+  List<T> parseList(C context, Tokenizer tokenizer, String separator, String close) {
     ArrayList<T> elements = new ArrayList<>();
     if (!tokenizer.currentValue.equals(close)) {
       while (true) {
-        elements.add(parse(tokenizer));
+        elements.add(parse(context, tokenizer));
         String op = tokenizer.currentValue;
         if (op.equals(close)) {
           break;
@@ -355,31 +354,31 @@ public class ExpressionParser<T> {
     return elements;
   }
 
-  T parsePrimary(Tokenizer tokenizer) {
+  T parsePrimary(C context, Tokenizer tokenizer) {
     String candidate = tokenizer.currentValue;
     if (groups.containsKey(candidate)) {
       tokenizer.nextToken();
       String[] grouping = groups.get(candidate);
-      return processor.group(tokenizer, candidate, parseList(tokenizer, grouping[0], grouping[1]));
+      return processor.group(context, tokenizer, candidate, parseList(context, tokenizer, grouping[0], grouping[1]));
     }
     // Parsing higher precedence infix operator.
     if (allSymbols.containsKey(candidate)) {
       for (Operators operators : precedenceList) {
         if (operators.get(OperatorType.PREFIX).contains(candidate)) {
           tokenizer.nextToken();
-          return processor.prefixOperator(tokenizer, candidate, parsePrimary(tokenizer));
+          return processor.prefixOperator(context, tokenizer, candidate, parsePrimary(context, tokenizer));
         }
       }
     }
     if (primary.contains(candidate)) {
       tokenizer.nextToken();
-      return processor.primary(tokenizer, candidate);
+      return processor.primary(context, tokenizer, candidate);
     }
 
     T result;
     switch (tokenizer.currentType) {
       case NUMBER:
-        result = processor.numberLiteral(tokenizer, candidate);
+        result = processor.numberLiteral(context, tokenizer, candidate);
         tokenizer.nextToken();
         break;
       case IDENTIFIER:
@@ -388,13 +387,13 @@ public class ExpressionParser<T> {
           String openingBracket = tokenizer.currentValue;
           String[] call = calls.get(openingBracket);
           tokenizer.nextToken();
-          result = processor.call(tokenizer, candidate, openingBracket, parseList(tokenizer, call[0], call[1]));
+          result = processor.call(context, tokenizer, candidate, openingBracket, parseList(context, tokenizer, call[0], call[1]));
         } else {
-          result = processor.identifier(tokenizer, candidate);
+          result = processor.identifier(context, tokenizer, candidate);
         }
         break;
       case STRING:
-        result = processor.stringLiteral(tokenizer, candidate);
+        result = processor.stringLiteral(context, tokenizer, candidate);
         tokenizer.nextToken();
         break;
       default:

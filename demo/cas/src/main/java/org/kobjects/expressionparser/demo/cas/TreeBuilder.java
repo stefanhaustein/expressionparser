@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-public class TreeBuilder extends ExpressionParser.Processor<Node> {
+public class TreeBuilder extends ExpressionParser.Processor<Node, Void> {
 
   @Override
-  public Node infixOperator(ExpressionParser.Tokenizer tokenizer, String name, Node left, Node right) {
+  public Node infixOperator(Void context, ExpressionParser.Tokenizer tokenizer, String name, Node left, Node right) {
     switch (name.charAt(0)) {
       case '+': return NodeFactory.add(left, right);
       case '-':
@@ -29,12 +29,12 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
     throw new UnsupportedOperationException("Unsupported infix operator: " + name);
   }
 
-  public Node implicitOperator(ExpressionParser.Tokenizer tokenizer, boolean strong, Node left, Node right) {
-    return infixOperator(tokenizer, "⋅", left, right);
+  public Node implicitOperator(Void context, ExpressionParser.Tokenizer tokenizer, boolean strong, Node left, Node right) {
+    return infixOperator(context, tokenizer, "⋅", left, right);
   }
 
   @Override
-  public Node prefixOperator(ExpressionParser.Tokenizer tokenizer, String name, Node argument) {
+  public Node prefixOperator(Void context, ExpressionParser.Tokenizer tokenizer, String name, Node argument) {
     if (name.equals("-") || name.equals("−")) {
       return NodeFactory.neg(argument);
     }
@@ -45,22 +45,22 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
   }
 
   @Override
-  public Node numberLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
+  public Node numberLiteral(Void context, ExpressionParser.Tokenizer tokenizer, String value) {
     return NodeFactory.c(Double.parseDouble(value));
   }
 
   @Override
-  public Node identifier(ExpressionParser.Tokenizer tokenizer, String name) {
+  public Node identifier(Void context, ExpressionParser.Tokenizer tokenizer, String name) {
     return NodeFactory.var(name);
   }
 
   @Override
-  public Node group(ExpressionParser.Tokenizer tokenizer, String paren, List<Node> elements) {
+  public Node group(Void context, ExpressionParser.Tokenizer tokenizer, String paren, List<Node> elements) {
     return elements.get(0);
   }
 
   @Override
-  public Node call(ExpressionParser.Tokenizer tokenizer, String identifier, String bracket, List<Node> arguments) {
+  public Node call(Void context, ExpressionParser.Tokenizer tokenizer, String identifier, String bracket, List<Node> arguments) {
     if (identifier.equals("derive")) {
       if (arguments.size() != 2) {
         throw new IllegalArgumentException("Two parameters expected for derive.");
@@ -70,21 +70,21 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
       }
       return NodeFactory.derive(arguments.get(0), arguments.get(1).toString());
     }
-    return super.call(tokenizer, identifier, bracket, arguments);
+    return super.call(context, tokenizer, identifier, bracket, arguments);
   }
 
   @Override
-  public Node apply(ExpressionParser.Tokenizer tokenizer, Node base, String bracket, List<Node> arguments) {
+  public Node apply(Void context, ExpressionParser.Tokenizer tokenizer, Node base, String bracket, List<Node> arguments) {
     throw new UnsupportedOperationException();
   }
 
-  public static ExpressionParser<Node> createParser() {
-    ExpressionParser<Node> parser = new ExpressionParser<Node>(new TreeBuilder()) {
+  public static ExpressionParser<Node, Void> createParser() {
+    ExpressionParser<Node, Void> parser = new ExpressionParser<Node, Void>(new TreeBuilder()) {
       @Override
-      public Node parse(String expression) {
+      public Node parse(Void context, String expression) {
         Tokenizer tokenizer = new ExpressionTokenizer(new Scanner(expression), this.getSymbols());
         tokenizer.nextToken();
-        Node result = parse(tokenizer);
+        Node result = parse(null, tokenizer);
         if (tokenizer.currentType != Tokenizer.TokenType.EOF) {
           throw tokenizer.exception("EOF expected.", null);
         }

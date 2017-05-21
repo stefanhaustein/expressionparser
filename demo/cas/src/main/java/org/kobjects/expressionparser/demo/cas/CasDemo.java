@@ -15,7 +15,7 @@ import java.util.Set;
 public class CasDemo {
 
   public static void main(String[] args) throws IOException {
-    ExpressionParser<Node> parser = TreeBuilder.createParser();
+    ExpressionParser<Node, Void> parser = TreeBuilder.createParser();
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     while (true) {
       System.out.print("Input?  ");
@@ -24,7 +24,7 @@ public class CasDemo {
         break;
       }
       try {
-        Node expr = parser.parse(input);
+        Node expr = parser.parse(null, input);
         String s = expr.toString();
         System.out.println("\nParsed: " + s + '\n');
         s = "Equals: " + s;
