@@ -30,7 +30,7 @@ public class Basic {
       try {
         prompt = interpreter.processInputLine(line);
       } catch (ExpressionParser.ParsingException e) {
-        char[] fill = new char[e.position];
+        char[] fill = new char[e.start + 1];
         Arrays.fill(fill, ' ');
         System.out.println(new String(fill) + '^');
         System.out.println("?SYNTAX ERROR: " + e.getMessage());

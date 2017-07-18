@@ -418,14 +418,12 @@ public class ExpressionParser<T, C> {
   }
 
   public static class ParsingException extends RuntimeException {
-    final public int position;
-    final public int line;
-    final public int column;
-    public ParsingException(String text, int position, int line, int column, Exception base) {
+    final public int start;
+    final public int end;
+    public ParsingException(int start, int end, String text, Exception base) {
       super(text, base);
-      this.position = position;
-      this.line = line;
-      this.column = column;
+      this.start = start;
+      this.end = end;
     }
   }
 
@@ -507,11 +505,9 @@ public class ExpressionParser<T, C> {
       return identifier;
     }
 
-
     public ParsingException exception(String message, Exception cause) {
-      return new ParsingException(message + " Position: " + currentLine + ":" + currentColumn()
-          + " (" + currentPosition + ") Token: '" + currentValue + "' Type: " + currentType,
-          currentPosition, currentLine, currentColumn(), cause);
+      return new ParsingException(currentPosition - currentValue.length(), currentPosition,
+              message + " Token: '" + currentValue + "' Type: " + currentType, cause);
     }
 
     public TokenType nextToken() {
@@ -548,8 +544,8 @@ public class ExpressionParser<T, C> {
           pos = j + 1;
           currentLine++;
           lastLineStart = currentPosition + j;
-          currentPosition += leadingWhitespace.length();
         }
+        currentPosition += leadingWhitespace.length();
       } else {
         leadingWhitespace = "";
         currentValue = value;
