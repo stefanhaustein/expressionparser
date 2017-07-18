@@ -26,7 +26,7 @@ Step 2: Add the HtmlView2 dependency
 
 ## Immediate evaluation
 
-[Calculator.java](demos/calculator/src/main/java/org/kobjects/expressionparser/demo/calculator/Calculator.java) in the demo package contains a simple self-contained use case directly interpreting the input.
+[Calculator.java](demo/calculator/src/main/java/org/kobjects/expressionparser/demo/calculator/Calculator.java) in the demo package contains a simple self-contained use case directly interpreting the input.
 
 The parser configuration supports simple mathematical expressions, and the processor just evaluates them immediately, without constructing an intermediate tree representation.
 
@@ -35,7 +35,7 @@ Expression? 5+2*-2^3^2
 Result:     -1019.0
 ```
 
-[SetDemo.java](demos/sets/src/main/java/org/kobjects/expressionparser/demo/sets/SetDemo.java) is similar to the calculator demo,
+[SetDemo.java](demo/sets/src/main/java/org/kobjects/expressionparser/demo/sets/SetDemo.java) is similar to the calculator demo,
 but illustrates the flexibility of the expression parser with a slightly more "atypical" expression language.
 
 Example output from [SetDemo.java]:
@@ -54,7 +54,7 @@ Result:     2
 
 ## Tree building
 
-[TreeBuilder.java](demos/cas/src/main/java/org/kobjects/expressionparser/demo/cas/TreeBuilder.java) shows how to builds a tree from the input (using a [node factory](demos/cas/src/main/java/org/kobjects/expressionparser/demo/cas/tree/NodeFactory.java). The corresponding [demo app](demos/cas/src/main/java/org/kobjects/expressionparser/demo/cas/) is able to do simplifications and to compute the symbolic derivative. An extended tokenizer translates superscript digits.
+[TreeBuilder.java](demo/cas/src/main/java/org/kobjects/expressionparser/demo/cas/TreeBuilder.java) shows how to builds a tree from the input (using a [node factory](demo/cas/src/main/java/org/kobjects/expressionparser/demo/cas/tree/NodeFactory.java). The corresponding [demo app](demo/cas/src/main/java/org/kobjects/expressionparser/demo/cas/) is able to do simplifications and to compute the symbolic derivative. An extended tokenizer translates superscript digits.
 
 ```
 Input?  derive(1/x, x)
@@ -62,7 +62,6 @@ Input?  derive(1/x, x)
 Parsed: derive(1/x, x)
 
               ⎛1   ⎞
-Equals: derive⎜─, x⎟
               ⎝x   ⎠
 
         (-derive(x, x))     ⎪                
@@ -83,7 +82,7 @@ Flat:   -1/x²
 
 ## Integration with a "main" parser
 
-The [BASIC demo parser](demos/basic/src/main/java/org/kobjects/expressionparser/demo/basic/Parser.java) is able to parse 70's BASIC programs. The rest of the [BASIC demo directory](src/main/java/org/kobjects/expressionparser/demo/basic/) contains some code to run them.
+The [BASIC demo parser](demo/basic/src/main/java/org/kobjects/expressionparser/demo/basic/Parser.java) is able to parse 70's BASIC programs. The rest of the [BASIC demo directory](src/main/java/org/kobjects/expressionparser/demo/basic/) contains some code to run them.
 
 ```
   **** EXPRESSION PARSER BASIC DEMO V1 ****
