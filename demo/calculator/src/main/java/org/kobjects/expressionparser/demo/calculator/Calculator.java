@@ -109,7 +109,7 @@ public class Calculator {
       try {
         System.out.println("Result:     " + parser.parse(null, input));
       } catch (ExpressionParser.ParsingException e) {
-        char[] fill = new char[e.position + 5];
+        char[] fill = new char[e.start + 7];
         Arrays.fill(fill, '-');
         System.out.println("Error " + new String(fill) + "^: " + e.getMessage());
       } catch (RuntimeException e) {
