@@ -378,8 +378,8 @@ public class ExpressionParser<T, C> {
     T result;
     switch (tokenizer.currentType) {
       case NUMBER:
-        result = processor.numberLiteral(context, tokenizer, candidate);
         tokenizer.nextToken();
+        result = processor.numberLiteral(context, tokenizer, candidate);
         break;
       case IDENTIFIER:
         tokenizer.nextToken();
@@ -393,8 +393,8 @@ public class ExpressionParser<T, C> {
         }
         break;
       case STRING:
-        result = processor.stringLiteral(context, tokenizer, candidate);
         tokenizer.nextToken();
+        result = processor.stringLiteral(context, tokenizer, candidate);
         break;
       default:
         throw tokenizer.exception("Unexpected token type.", null);
