@@ -442,6 +442,8 @@ public class ExpressionParser<T, C> {
         "\\G\\s*(\"([^\"\\\\]*(\\\\.[^\"\\\\]*)*)\"|'([^'\\\\]*(\\\\.[^'\\\\]*)*)')");
     public static final Pattern DEFAULT_END_PATTERN = Pattern.compile("\\G\\s*\\Z");
 
+    public static final Pattern DEFAULT_NEWLINE_PATTERN = Pattern.compile(
+            "\\G\\h*\\v");
 
     public enum TokenType {
       UNRECOGNIZED, BOF, IDENTIFIER, SYMBOL, NUMBER, STRING, EOF
@@ -451,6 +453,7 @@ public class ExpressionParser<T, C> {
     public Pattern identifierPattern = DEFAULT_IDENTIFIER_PATTERN;
     public Pattern stringPattern = DEFAULT_STRING_PATTERN;
     public Pattern endPattern = DEFAULT_END_PATTERN;
+    public Pattern newlinePattern = DEFAULT_NEWLINE_PATTERN;
     public Pattern symbolPattern;
 
     public int currentLine = 1;
@@ -459,6 +462,7 @@ public class ExpressionParser<T, C> {
     public String currentValue = "";
     public TokenType currentType = TokenType.BOF;
     public String leadingWhitespace = "";
+    public boolean insertSemicolons;
 
     protected final Scanner scanner;
 
@@ -516,7 +520,15 @@ public class ExpressionParser<T, C> {
       if (scanner.ioException() != null) {
         throw exception("IO Exception: " + scanner.ioException().getMessage(), scanner.ioException());
       }
-      if ((value = scanner.findWithinHorizon(identifierPattern, 0)) != null) {
+
+      if (insertSemicolons &&
+              (currentType == TokenType.IDENTIFIER || currentType == TokenType.NUMBER ||
+                      currentType == TokenType.STRING  ||
+                      (currentValue.length() == 1 && ")]}".indexOf(currentValue) != -1)) &&
+              (value = scanner.findWithinHorizon(newlinePattern, 0)) != null) {
+        value += ";";
+        currentType = TokenType.SYMBOL;
+      } else if ((value = scanner.findWithinHorizon(identifierPattern, 0)) != null) {
         currentType = TokenType.IDENTIFIER;
       } else if ((value = scanner.findWithinHorizon(numberPattern, 0)) != null) {
         currentType = TokenType.NUMBER;
