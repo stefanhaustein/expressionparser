@@ -442,8 +442,9 @@ public class ExpressionParser<T, C> {
         "\\G\\s*(\"([^\"\\\\]*(\\\\.[^\"\\\\]*)*)\"|'([^'\\\\]*(\\\\.[^'\\\\]*)*)')");
     public static final Pattern DEFAULT_END_PATTERN = Pattern.compile("\\G\\s*\\Z");
 
-    public static final Pattern DEFAULT_NEWLINE_PATTERN = Pattern.compile(
-            "\\G\\h*\\v");
+    public static final Pattern DEFAULT_LINE_COMMENT_PATTERN = Pattern.compile("\\G\\h*#.*(\\v|\\Z)");
+
+    public static final Pattern DEFAULT_NEWLINE_PATTERN = Pattern.compile("\\G\\h*\\v");
 
     public enum TokenType {
       UNRECOGNIZED, BOF, IDENTIFIER, SYMBOL, NUMBER, STRING, EOF
@@ -454,6 +455,7 @@ public class ExpressionParser<T, C> {
     public Pattern stringPattern = DEFAULT_STRING_PATTERN;
     public Pattern endPattern = DEFAULT_END_PATTERN;
     public Pattern newlinePattern = DEFAULT_NEWLINE_PATTERN;
+    public Pattern lineCommentPattern = DEFAULT_LINE_COMMENT_PATTERN;
     public Pattern symbolPattern;
 
     public int currentLine = 1;
@@ -465,6 +467,7 @@ public class ExpressionParser<T, C> {
     public boolean insertSemicolons;
 
     protected final Scanner scanner;
+    private StringBuilder skippedComments = new StringBuilder();
 
     public Tokenizer(Scanner scanner, Iterable<String> symbols, String... additionalSymbols) {
       this.scanner = scanner;
@@ -514,6 +517,18 @@ public class ExpressionParser<T, C> {
               message + " Token: '" + currentValue + "' Type: " + currentType, cause);
     }
 
+    protected boolean insertSemicolon() {
+      return (currentType == TokenType.IDENTIFIER || currentType == TokenType.NUMBER ||
+              currentType == TokenType.STRING  ||
+              (currentValue.length() == 1 && ")]}".indexOf(currentValue) != -1));
+    }
+
+    public String consumeComments() {
+      String result = skippedComments.toString();
+      skippedComments.setLength(0);
+      return result;
+    }
+
     public TokenType nextToken() {
       currentPosition += currentValue.length();
       String value;
@@ -521,12 +536,23 @@ public class ExpressionParser<T, C> {
         throw exception("IO Exception: " + scanner.ioException().getMessage(), scanner.ioException());
       }
 
-      if (insertSemicolons &&
-              (currentType == TokenType.IDENTIFIER || currentType == TokenType.NUMBER ||
-                      currentType == TokenType.STRING  ||
-                      (currentValue.length() == 1 && ")]}".indexOf(currentValue) != -1)) &&
-              (value = scanner.findWithinHorizon(newlinePattern, 0)) != null) {
-        value += ";";
+      boolean newLine = false;
+      while (true) {
+        if ((value = scanner.findWithinHorizon(lineCommentPattern, 0)) != null) {
+          skippedComments.append(value.trim() + "\n");
+          System.out.println("Comment: " + value);
+        } else if ((value = scanner.findWithinHorizon(newlinePattern, 0)) == null) {
+          break;
+        }
+        newLine = true;
+        currentPosition += value.length();
+        currentLine++;
+        lastLineStart = currentPosition;
+      }
+
+      if (newLine && insertSemicolons && insertSemicolon()) {
+        value = ";";
+        currentPosition--;
         currentType = TokenType.SYMBOL;
       } else if ((value = scanner.findWithinHorizon(identifierPattern, 0)) != null) {
         currentType = TokenType.IDENTIFIER;
