@@ -19,14 +19,14 @@ class Parser {
     expressionParser.addCallBrackets("(", ",", ")");
     expressionParser.addCallBrackets("[", ",", "]");  // HP
     expressionParser.addGroupBrackets("(", null, ")");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 7, "^");
-    expressionParser.addOperators(ExpressionParser.OperatorType.PREFIX, 6, "-");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 5, "*", "/");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 4, "+", "-");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 3, ">=", "<=", "<>", ">", "<", "=");
-    expressionParser.addOperators(ExpressionParser.OperatorType.PREFIX, 2, "not", "NOT", "Not");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "and", "AND", "And");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "or", "OR", "Or");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 8, "^");
+    expressionParser.addOperators(ExpressionParser.OperatorType.PREFIX, 7, "-");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 6, "*", "/");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 5, "+", "-");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 4, ">=", "<=", "<>", ">", "<", "=");
+    expressionParser.addOperators(ExpressionParser.OperatorType.PREFIX, 3, "not", "NOT", "Not");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 2, "and", "AND", "And");
+    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "or", "OR", "Or");
   }
 
   ExpressionParser.Tokenizer createTokenizer(String line) {
