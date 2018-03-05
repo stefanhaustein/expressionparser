@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class SetDemo {
 
-  static class SetProcessor extends ExpressionParser.Processor<Object, Void> {
+  static class SetProcessor extends ExpressionParser.Processor<Object> {
 
     private Set<Object> assertSet(Object o) {
       if (!(o instanceof Set)) {
@@ -25,7 +25,7 @@ public class SetDemo {
     }
 
     @Override
-    public Object infixOperator(Void context, ExpressionParser.Tokenizer tokenizer, String name, Object left, Object right) {
+    public Object infixOperator(ExpressionParser.Tokenizer tokenizer, String name, Object left, Object right) {
       if (name.equals("\u2229")) {  // intersection
         assertSet(left).retainAll(assertSet(right));
         return left;
@@ -42,17 +42,17 @@ public class SetDemo {
     }
 
     @Override
-    public Object numberLiteral(Void context, ExpressionParser.Tokenizer tokenizer, String value) {
+    public Object numberLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
       return Double.parseDouble(value);
     }
 
     @Override
-    public Object stringLiteral(Void context, ExpressionParser.Tokenizer tokenizer, String value) {
+    public Object stringLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
       return value;
     }
 
     @Override
-    public Object primary(Void context, ExpressionParser.Tokenizer tokenizer, String name) {
+    public Object primary(ExpressionParser.Tokenizer tokenizer, String name) {
       if (name.equals("\u2205")){
         return new LinkedHashSet<Object>();
       }
@@ -60,12 +60,12 @@ public class SetDemo {
     }
 
     @Override
-    public Object identifier(Void context, ExpressionParser.Tokenizer tokenizer, String name) {
+    public Object identifier(ExpressionParser.Tokenizer tokenizer, String name) {
       return name;
     }
 
     @Override
-    public Object group(Void context, ExpressionParser.Tokenizer tokenizer, String paren, List<Object> elements) {
+    public Object group(ExpressionParser.Tokenizer tokenizer, String paren, List<Object> elements) {
       if (paren.equals("(")) {
         return elements.get(0);
       }
@@ -84,13 +84,13 @@ public class SetDemo {
         }
         throw new RuntimeException("Can't apply || to " + o);
       }
-      return super.group(context, tokenizer, paren, elements);
+      return super.group(tokenizer, paren, elements);
     }
   }
 
   public static void main(String[] args) throws IOException {
     System.out.println("Operators: \u2229 \u222a \u2216 \u2205");
-    ExpressionParser<Object, Void> parser = new ExpressionParser<>(new SetProcessor());
+    ExpressionParser<Object> parser = new ExpressionParser<>(new SetProcessor());
     parser.addGroupBrackets("(", null, ")");
     parser.addGroupBrackets("{", ",", "}");
     parser.addGroupBrackets("|", null, "|");
@@ -105,7 +105,7 @@ public class SetDemo {
         break;
       }
       try {
-        System.out.println("Result:     " + parser.parse(null, input).toString().replace('[', '{').replace(']', '}'));
+        System.out.println("Result:     " + parser.parse(input).toString().replace('[', '{').replace(']', '}'));
       } catch (ExpressionParser.ParsingException e) {
         char[] fill = new char[e.start + 8];
         Arrays.fill(fill, '-');

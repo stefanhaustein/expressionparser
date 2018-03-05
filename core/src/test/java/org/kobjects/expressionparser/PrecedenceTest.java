@@ -7,7 +7,7 @@ import static org.junit.Assert.assertEquals;
 
 public class PrecedenceTest {
 
-    static class TestProcessor extends ExpressionParser.Processor<String, Void> {
+    static class TestProcessor extends ExpressionParser.Processor<String> {
         private String counterBracket(String bracket) {
             switch (bracket) {
                 case "(": return ")";
@@ -19,32 +19,32 @@ public class PrecedenceTest {
         }
 
         @Override
-        public String infixOperator(Void context, ExpressionParser.Tokenizer tokenizer, String name, String left, String right) {
+        public String infixOperator(ExpressionParser.Tokenizer tokenizer, String name, String left, String right) {
             return "(" + left + " " + name + " " + right + ")";
         }
 
         @Override
-        public String implicitOperator(Void context, ExpressionParser.Tokenizer tokenizer, boolean strong, String left, String right) {
+        public String implicitOperator(ExpressionParser.Tokenizer tokenizer, boolean strong, String left, String right) {
             return "(" + left + (strong ? "" : " ") + right + ")";
         }
 
         @Override
-        public String prefixOperator(Void context, ExpressionParser.Tokenizer tokenizer, String name, String argument) {
+        public String prefixOperator(ExpressionParser.Tokenizer tokenizer, String name, String argument) {
             return "(" + name + " " + argument + ")";
         }
 
         @Override
-        public String numberLiteral(Void context, ExpressionParser.Tokenizer tokenizer, String value) {
+        public String numberLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
             return value;
         }
 
         @Override
-        public String identifier(Void context, ExpressionParser.Tokenizer tokenizer, String name) {
+        public String identifier(ExpressionParser.Tokenizer tokenizer, String name) {
             return name;
         }
 
         @Override
-        public String group(Void context, ExpressionParser.Tokenizer tokenizer, String paren, List<String> elements) {
+        public String group(ExpressionParser.Tokenizer tokenizer, String paren, List<String> elements) {
             return paren + elements + counterBracket(paren);
         }
 
@@ -52,15 +52,15 @@ public class PrecedenceTest {
          * Delegates function calls to Math via reflection.
          */
         @Override
-        public String apply(Void context, ExpressionParser.Tokenizer tokenizer, String left, String bracket, List<String> arguments) {
+        public String apply(ExpressionParser.Tokenizer tokenizer, String left, String bracket, List<String> arguments) {
             return "(" + left + bracket + arguments + counterBracket(bracket) + ")";
         }
 
         /**
          * Creates a parser for this processor with matching operations and precedences set up.
          */
-        static ExpressionParser<String, Void> createParser() {
-            ExpressionParser<String, Void> parser = new ExpressionParser<String, Void>(new TestProcessor());
+        static ExpressionParser<String> createParser() {
+            ExpressionParser<String> parser = new ExpressionParser<String>(new TestProcessor());
             parser.addGroupBrackets("(", null, ")");
             parser.addOperators(ExpressionParser.OperatorType.INFIX, 7, ".");
             parser.addApplyBrackets(6, "(", ",", ")");
@@ -77,7 +77,7 @@ public class PrecedenceTest {
     }
 
     static String parse(String input) {
-        return TestProcessor.createParser().parse(null, input);
+        return TestProcessor.createParser().parse(input);
     }
 
     @Test
