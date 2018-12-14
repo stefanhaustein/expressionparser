@@ -506,8 +506,8 @@ public class ExpressionParser<T> {
     }
 
     public ParsingException exception(String message, Exception cause) {
-      return new ParsingException(currentPosition - currentValue.length(), currentPosition,
-              message + " Token: '" + currentValue + "' Type: " + currentType, cause);
+      return new ParsingException(currentPosition, currentPosition + currentValue.length(),
+              message, cause);
     }
 
     protected boolean insertSemicolon() {

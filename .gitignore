@@ -14,7 +14,16 @@ hs_err_pid*
 .gradle/
 build/
 /*/build/
+local.properties
 
 # Idea
 
 .idea/
+*.iml
+
+# Eclipse
+
+.project
+.settings/
+.classpath
+bin/

@@ -54,9 +54,10 @@ public class CasDemo {
         }
 
       } catch (ParsingException e) {
-        char[] fill = new char[e.start + 3];
-        Arrays.fill(fill, '-');
-        System.out.println("Error " + new String(fill) + "^: " + e.getMessage());
+        char[] fill = new char[Math.max(e.end, e.start + 1)];
+        Arrays.fill(fill, 0, e.start, '-');
+        Arrays.fill(fill, e.start, Math.max(e.end, e.start + 1), '^');
+        System.out.println("Error   " + new String(fill) + ": " + e.getMessage());
       } catch (RuntimeException e) {
         e.printStackTrace();
       }

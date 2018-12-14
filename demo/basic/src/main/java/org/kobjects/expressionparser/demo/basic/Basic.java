@@ -30,9 +30,10 @@ public class Basic {
       try {
         prompt = interpreter.processInputLine(line);
       } catch (ExpressionParser.ParsingException e) {
-        char[] fill = new char[e.start + 1];
-        Arrays.fill(fill, ' ');
-        System.out.println(new String(fill) + '^');
+        char[] fill = new char[Math.max(e.end, e.start + 1)];
+        Arrays.fill(fill, 0, e.start, '-');
+        Arrays.fill(fill, e.start, Math.max(e.end, e.start + 1), '^');
+        System.out.println(new String(fill));
         System.out.println("?SYNTAX ERROR: " + e.getMessage());
         interpreter.lastException = e;
       } catch (Exception e) {
