@@ -14,7 +14,7 @@ Step 1: Add jitpack to your root build.gradle at the end of repositories:
 		    }
 	    }
 
-Step 2: Add the HtmlView2 dependency
+Step 2: Add the expressionparser dependency
 
 	dependencies {
 		compile 'com.github.stefanhaustein.expressionparser:core:v1.0.0'
