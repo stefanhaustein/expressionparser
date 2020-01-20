@@ -1,6 +1,9 @@
 package org.kobjects.expressionparser.demo.cas;
 
 import org.kobjects.expressionparser.ExpressionParser;
+import org.kobjects.expressionparser.OperatorType;
+import org.kobjects.expressionparser.Processor;
+import org.kobjects.expressionparser.Tokenizer;
 import org.kobjects.expressionparser.demo.cas.tree.Node;
 import org.kobjects.expressionparser.demo.cas.tree.NodeFactory;
 import org.kobjects.expressionparser.demo.cas.tree.UnaryFunction;
@@ -10,10 +13,10 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
-public class TreeBuilder extends ExpressionParser.Processor<Node> {
+public class TreeBuilder extends Processor<Node> {
 
   @Override
-  public Node infixOperator(ExpressionParser.Tokenizer tokenizer, String name, Node left, Node right) {
+  public Node infixOperator(Tokenizer tokenizer, String name, Node left, Node right) {
     switch (name.charAt(0)) {
       case '+': return NodeFactory.add(left, right);
       case '-':
@@ -29,12 +32,12 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
     throw new UnsupportedOperationException("Unsupported infix operator: " + name);
   }
 
-  public Node implicitOperator(ExpressionParser.Tokenizer tokenizer, boolean strong, Node left, Node right) {
+  public Node implicitOperator(Tokenizer tokenizer, boolean strong, Node left, Node right) {
     return infixOperator(tokenizer, "⋅", left, right);
   }
 
   @Override
-  public Node prefixOperator(ExpressionParser.Tokenizer tokenizer, String name, Node argument) {
+  public Node prefixOperator(Tokenizer tokenizer, String name, Node argument) {
     if (name.equals("-") || name.equals("−")) {
       return NodeFactory.neg(argument);
     }
@@ -45,22 +48,22 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
   }
 
   @Override
-  public Node numberLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
+  public Node numberLiteral(Tokenizer tokenizer, String value) {
     return NodeFactory.c(Double.parseDouble(value));
   }
 
   @Override
-  public Node identifier(ExpressionParser.Tokenizer tokenizer, String name) {
+  public Node identifier(Tokenizer tokenizer, String name) {
     return NodeFactory.var(name);
   }
 
   @Override
-  public Node group(ExpressionParser.Tokenizer tokenizer, String paren, List<Node> elements) {
+  public Node group(Tokenizer tokenizer, String paren, List<Node> elements) {
     return elements.get(0);
   }
 
   @Override
-  public Node call(ExpressionParser.Tokenizer tokenizer, String identifier, String bracket, List<Node> arguments) {
+  public Node call(Tokenizer tokenizer, String identifier, String bracket, List<Node> arguments) {
     if (identifier.equals("derive")) {
       if (arguments.size() != 2) {
         throw new IllegalArgumentException("Two parameters expected for derive.");
@@ -74,7 +77,7 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
   }
 
   @Override
-  public Node apply(ExpressionParser.Tokenizer tokenizer, Node base, String bracket, List<Node> arguments) {
+  public Node apply(Tokenizer tokenizer, Node base, String bracket, List<Node> arguments) {
     throw new UnsupportedOperationException();
   }
 
@@ -93,21 +96,21 @@ public class TreeBuilder extends ExpressionParser.Processor<Node> {
     };
     parser.addCallBrackets("(", ",", ")");
     parser.addGroupBrackets("(", null, ")");
-    parser.addOperators(ExpressionParser.OperatorType.INFIX_RTL, Node.PRECEDENCE_POWER, "^");
-    parser.addOperators(ExpressionParser.OperatorType.PREFIX, Node.PRECEDENCE_SIGNUM, "+", "-", "−");
+    parser.addOperators(OperatorType.INFIX_RTL, Node.PRECEDENCE_POWER, "^");
+    parser.addOperators(OperatorType.PREFIX, Node.PRECEDENCE_SIGNUM, "+", "-", "−");
     parser.setImplicitOperatorPrecedence(true, Node.PRECEDENCE_IMPLICIT_MULTIPLICATION);
     for (String name : UnaryFunction.DEFINITIONS.keySet()) {
       parser.addOperators(
-          ExpressionParser.OperatorType.PREFIX, Node.PRECEDENCE_UNARY_FUNCTION, name);
+          OperatorType.PREFIX, Node.PRECEDENCE_UNARY_FUNCTION, name);
     }
-    parser.addOperators(ExpressionParser.OperatorType.INFIX, Node.PRECEDENCE_MULTIPLICATIVE,
+    parser.addOperators(OperatorType.INFIX, Node.PRECEDENCE_MULTIPLICATIVE,
         "*", "×", "⋅", "/", ":", "÷");
-    parser.addOperators(ExpressionParser.OperatorType.INFIX, Node.PRECEDENCE_ADDITIVE,
+    parser.addOperators(OperatorType.INFIX, Node.PRECEDENCE_ADDITIVE,
         "+", "-", "−");
     return parser;
   }
 
-  static class ExpressionTokenizer extends ExpressionParser.Tokenizer {
+  static class ExpressionTokenizer extends Tokenizer {
     static final Pattern EXPONENT_PATTERN = Pattern.compile("\\G\\s*[⁰¹²³⁴⁵⁶⁷⁸⁹]+");
 
     String pendingExponent;

@@ -1,6 +1,6 @@
 package org.kobjects.expressionparser.demo.basic;
 
-import org.kobjects.expressionparser.ExpressionParser;
+import org.kobjects.expressionparser.ParsingException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,7 +29,7 @@ public class Basic {
       prompt = true;
       try {
         prompt = interpreter.processInputLine(line);
-      } catch (ExpressionParser.ParsingException e) {
+      } catch (ParsingException e) {
         char[] fill = new char[Math.max(e.end, e.start + 1)];
         Arrays.fill(fill, 0, e.start, '-');
         Arrays.fill(fill, e.start, Math.max(e.end, e.start + 1), '^');

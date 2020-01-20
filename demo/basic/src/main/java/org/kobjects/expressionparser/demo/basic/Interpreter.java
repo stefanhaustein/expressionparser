@@ -1,6 +1,6 @@
 package org.kobjects.expressionparser.demo.basic;
 
-import org.kobjects.expressionparser.ExpressionParser;
+import org.kobjects.expressionparser.Tokenizer;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -103,7 +103,7 @@ public class Interpreter {
    * Returns true if the line was "interactive" and a "ready" prompt should be displayed.
    */
   boolean processInputLine(String line) {
-    ExpressionParser.Tokenizer tokenizer = parser.createTokenizer(line);
+    Tokenizer tokenizer = parser.createTokenizer(line);
 
     tokenizer.nextToken();
     switch (tokenizer.currentType) {
@@ -112,7 +112,7 @@ public class Interpreter {
       case NUMBER:
         int lineNumber = (int) Double.parseDouble(tokenizer.currentValue);
         tokenizer.nextToken();
-        if (tokenizer.currentType == ExpressionParser.Tokenizer.TokenType.EOF) {
+        if (tokenizer.currentType == Tokenizer.TokenType.EOF) {
           program.remove(lineNumber);
         } else {
           program.put(lineNumber, parser.parseStatementList(tokenizer));

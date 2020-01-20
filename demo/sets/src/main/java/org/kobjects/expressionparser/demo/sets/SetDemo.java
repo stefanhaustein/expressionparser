@@ -1,6 +1,10 @@
 package org.kobjects.expressionparser.demo.sets;
 
 import org.kobjects.expressionparser.ExpressionParser;
+import org.kobjects.expressionparser.OperatorType;
+import org.kobjects.expressionparser.ParsingException;
+import org.kobjects.expressionparser.Processor;
+import org.kobjects.expressionparser.Tokenizer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,7 +19,7 @@ import java.util.Set;
  */
 public class SetDemo {
 
-  static class SetProcessor extends ExpressionParser.Processor<Object> {
+  static class SetProcessor extends Processor<Object> {
 
     private Set<Object> assertSet(Object o) {
       if (!(o instanceof Set)) {
@@ -25,7 +29,7 @@ public class SetDemo {
     }
 
     @Override
-    public Object infixOperator(ExpressionParser.Tokenizer tokenizer, String name, Object left, Object right) {
+    public Object infixOperator(Tokenizer tokenizer, String name, Object left, Object right) {
       if (name.equals("\u2229")) {  // intersection
         assertSet(left).retainAll(assertSet(right));
         return left;
@@ -42,17 +46,17 @@ public class SetDemo {
     }
 
     @Override
-    public Object numberLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
+    public Object numberLiteral(Tokenizer tokenizer, String value) {
       return Double.parseDouble(value);
     }
 
     @Override
-    public Object stringLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
+    public Object stringLiteral(Tokenizer tokenizer, String value) {
       return value;
     }
 
     @Override
-    public Object primary(ExpressionParser.Tokenizer tokenizer, String name) {
+    public Object primary(Tokenizer tokenizer, String name) {
       if (name.equals("\u2205")){
         return new LinkedHashSet<Object>();
       }
@@ -60,12 +64,12 @@ public class SetDemo {
     }
 
     @Override
-    public Object identifier(ExpressionParser.Tokenizer tokenizer, String name) {
+    public Object identifier(Tokenizer tokenizer, String name) {
       return name;
     }
 
     @Override
-    public Object group(ExpressionParser.Tokenizer tokenizer, String paren, List<Object> elements) {
+    public Object group(Tokenizer tokenizer, String paren, List<Object> elements) {
       if (paren.equals("(")) {
         return elements.get(0);
       }
@@ -94,8 +98,8 @@ public class SetDemo {
     parser.addGroupBrackets("(", null, ")");
     parser.addGroupBrackets("{", ",", "}");
     parser.addGroupBrackets("|", null, "|");
-    parser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "\u2229");
-    parser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "\u222a", "\u2216", "\\");
+    parser.addOperators(OperatorType.INFIX, 1, "\u2229");
+    parser.addOperators(OperatorType.INFIX, 0, "\u222a", "\u2216", "\\");
     parser.addPrimary("\u2205");
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     while (true) {
@@ -106,7 +110,7 @@ public class SetDemo {
       }
       try {
         System.out.println("Result:     " + parser.parse(input).toString().replace('[', '{').replace(']', '}'));
-      } catch (ExpressionParser.ParsingException e) {
+      } catch (ParsingException e) {
         char[] fill = new char[e.start + 8];
         Arrays.fill(fill, '-');
         System.out.println("Error " + new String(fill) + "^: " + e.getMessage());

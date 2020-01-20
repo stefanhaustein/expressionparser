@@ -1,6 +1,9 @@
 package org.kobjects.expressionparser.demo.basic;
 
 import org.kobjects.expressionparser.ExpressionParser;
+import org.kobjects.expressionparser.OperatorType;
+import org.kobjects.expressionparser.Processor;
+import org.kobjects.expressionparser.Tokenizer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,21 +22,21 @@ class Parser {
     expressionParser.addCallBrackets("(", ",", ")");
     expressionParser.addCallBrackets("[", ",", "]");  // HP
     expressionParser.addGroupBrackets("(", null, ")");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 8, "^");
-    expressionParser.addOperators(ExpressionParser.OperatorType.PREFIX, 7, "-");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 6, "*", "/");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 5, "+", "-");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 4, ">=", "<=", "<>", ">", "<", "=");
-    expressionParser.addOperators(ExpressionParser.OperatorType.PREFIX, 3, "not", "NOT", "Not");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 2, "and", "AND", "And");
-    expressionParser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "or", "OR", "Or");
+    expressionParser.addOperators(OperatorType.INFIX, 8, "^");
+    expressionParser.addOperators(OperatorType.PREFIX, 7, "-");
+    expressionParser.addOperators(OperatorType.INFIX, 6, "*", "/");
+    expressionParser.addOperators(OperatorType.INFIX, 5, "+", "-");
+    expressionParser.addOperators(OperatorType.INFIX, 4, ">=", "<=", "<>", ">", "<", "=");
+    expressionParser.addOperators(OperatorType.PREFIX, 3, "not", "NOT", "Not");
+    expressionParser.addOperators(OperatorType.INFIX, 2, "and", "AND", "And");
+    expressionParser.addOperators(OperatorType.INFIX, 1, "or", "OR", "Or");
   }
 
-  ExpressionParser.Tokenizer createTokenizer(String line) {
+  Tokenizer createTokenizer(String line) {
     return new GwTokenizer(new Scanner(line), expressionParser.getSymbols());
   }
 
-  Statement parseStatement(ExpressionParser.Tokenizer tokenizer) {
+  Statement parseStatement(Tokenizer tokenizer) {
     String name = tokenizer.currentValue;
     if (tryConsume(tokenizer, "GO")) {  // GO TO, GO SUB -> GOTO, GOSUB
       name += tokenizer.currentValue;
@@ -55,7 +58,7 @@ class Parser {
     switch (type) {
       case RUN:  // 0 or 1 param; Default is 0
       case RESTORE:
-        if (tokenizer.currentType != ExpressionParser.Tokenizer.TokenType.EOF &&
+        if (tokenizer.currentType != Tokenizer.TokenType.EOF &&
             !tokenizer.currentValue.equals(":")) {
           return new Statement(interpreter, type, expressionParser.parse(tokenizer));
         }
@@ -69,7 +72,7 @@ class Parser {
 
       case NEXT:   // Zero of more
         ArrayList<Node> vars = new ArrayList<>();
-        if (tokenizer.currentType != ExpressionParser.Tokenizer.TokenType.EOF &&
+        if (tokenizer.currentType != Tokenizer.TokenType.EOF &&
             !tokenizer.currentValue.equals(":")) {
           do {
             vars.add(expressionParser.parse(tokenizer));
@@ -110,7 +113,7 @@ class Parser {
         if (!tryConsume(tokenizer, "THEN") && !tryConsume(tokenizer, "GOTO")) {
           throw tokenizer.exception("'THEN expected after IF-condition.'", null);
         }
-        if (tokenizer.currentType == ExpressionParser.Tokenizer.TokenType.NUMBER) {
+        if (tokenizer.currentType == Tokenizer.TokenType.NUMBER) {
           double target = (int) Double.parseDouble(tokenizer.currentValue);
           tokenizer.nextToken();
           return new Statement(interpreter, type, new String[]{" THEN "}, condition,
@@ -122,7 +125,7 @@ class Parser {
       case PRINT:
         List<Node> args = new ArrayList<>();
         List<String> delimiter = new ArrayList<>();
-        while (tokenizer.currentType != ExpressionParser.Tokenizer.TokenType.EOF
+        while (tokenizer.currentType != Tokenizer.TokenType.EOF
             && !tokenizer.currentValue.equals(":")) {
           if (tokenizer.currentValue.equals(",") || tokenizer.currentValue.equals(";")) {
             delimiter.add(tokenizer.currentValue + " ");
@@ -165,7 +168,7 @@ class Parser {
       }
       case REM: {
         StringBuilder sb = new StringBuilder();
-        while (tokenizer.currentType != ExpressionParser.Tokenizer.TokenType.EOF) {
+        while (tokenizer.currentType != Tokenizer.TokenType.EOF) {
           sb.append(tokenizer.leadingWhitespace).append(tokenizer.currentValue);
           tokenizer.nextToken();
         }
@@ -179,33 +182,33 @@ class Parser {
     }
   }
 
-  List<Statement> parseStatementList(ExpressionParser.Tokenizer tokenizer) {
+  List<Statement> parseStatementList(Tokenizer tokenizer) {
     ArrayList<Statement> result = new ArrayList<>();
     Statement statement;
     do {
       while (tokenizer.tryConsume(":")) {
         result.add(new Statement(interpreter, null));
       }
-      if (tokenizer.currentType == ExpressionParser.Tokenizer.TokenType.EOF) {
+      if (tokenizer.currentType == Tokenizer.TokenType.EOF) {
         break;
       }
       statement = parseStatement(tokenizer);
       result.add(statement);
     } while (statement.type == Statement.Type.IF ? statement.children.length == 1
         : tokenizer.tryConsume(":"));
-    if (tokenizer.currentType != ExpressionParser.Tokenizer.TokenType.EOF) {
+    if (tokenizer.currentType != Tokenizer.TokenType.EOF) {
       throw tokenizer.exception("Leftover input.", null);
     }
     return result;
   }
 
-  void require(ExpressionParser.Tokenizer tokenizer, String s) {
+  void require(Tokenizer tokenizer, String s) {
     if (!tryConsume(tokenizer, s)) {
       throw tokenizer.exception("Expected: '" + s + "'.", null);
     }
   }
 
-  boolean tryConsume(ExpressionParser.Tokenizer tokenizer, String s) {
+  boolean tryConsume(Tokenizer tokenizer, String s) {
     if (tokenizer.currentValue.equalsIgnoreCase(s)) {
       tokenizer.nextToken();
       return true;
@@ -217,7 +220,7 @@ class Parser {
    * A tokenizer subclass that splits identifiers if they contain reserved words,
    * so it will report "IFA<4THENPRINTZ" as "IF" "A" "<" "4" "THEN" "PRINT" "Z"
    */
-  static class GwTokenizer extends ExpressionParser.Tokenizer {
+  static class GwTokenizer extends Tokenizer {
     static Pattern reservedWordPattern;
     static {
       StringBuilder sb = new StringBuilder();
@@ -265,7 +268,7 @@ class Parser {
 
       super.nextToken();
 
-      if (currentType == ExpressionParser.Tokenizer.TokenType.IDENTIFIER) {
+      if (currentType == Tokenizer.TokenType.IDENTIFIER) {
         gwMatcher = reservedWordPattern.matcher(currentValue);
         if (gwMatcher.find()) {
           gwIdentifier = currentValue;
@@ -282,10 +285,10 @@ class Parser {
    * This class configures and manages the parser and is able to turn the expression parser
    * callbacks into an expression node tree.
    */
-  class ExpressionBuilder extends ExpressionParser.Processor<Node> {
+  class ExpressionBuilder extends Processor<Node> {
 
     @Override
-    public Node call(ExpressionParser.Tokenizer tokenizer, String name, String bracket, List<Node> arguments) {
+    public Node call(Tokenizer tokenizer, String name, String bracket, List<Node> arguments) {
       Node[] children = arguments.toArray(new Node[arguments.size()]);
       for (Builtin.Type builtinId: Builtin.Type.values()) {
         if (name.equalsIgnoreCase(builtinId.name())) {
@@ -318,7 +321,7 @@ class Parser {
     }
 
     @Override
-    public Node prefixOperator(ExpressionParser.Tokenizer tokenizer, String name, Node param) {
+    public Node prefixOperator(Tokenizer tokenizer, String name, Node param) {
       if (param.returnType() != Double.class) {
         throw new IllegalArgumentException("Numeric argument expected for '" + name + "'.");
       }
@@ -335,7 +338,7 @@ class Parser {
     }
 
     @Override
-    public Node infixOperator(ExpressionParser.Tokenizer tokenizer, String name, Node left, Node right) {
+    public Node infixOperator(Tokenizer tokenizer, String name, Node left, Node right) {
       if ("+<=<>=".indexOf(name) == -1 && (left.returnType() != Double.class ||
           right.returnType() != Double.class)) {
         throw new IllegalArgumentException("Numeric arguments expected for '" + name + "'.");
@@ -344,11 +347,11 @@ class Parser {
     }
 
     @Override
-    public Node group(ExpressionParser.Tokenizer tokenizer, String bracket, List<Node> args) {
+    public Node group(Tokenizer tokenizer, String bracket, List<Node> args) {
       return new Builtin(interpreter, null, args.get(0));
     }
 
-    @Override public Node identifier(ExpressionParser.Tokenizer tokenizer, String name) {
+    @Override public Node identifier(Tokenizer tokenizer, String name) {
       if (name.equalsIgnoreCase(Builtin.Type.RND.name())) {
         return new Builtin(interpreter, Builtin.Type.RND);
       }
@@ -359,12 +362,12 @@ class Parser {
       return new Variable(interpreter, name);
     }
 
-    @Override public Node numberLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
+    @Override public Node numberLiteral(Tokenizer tokenizer, String value) {
       return new Literal(Double.parseDouble(value));
     }
 
     @Override
-    public Node stringLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
+    public Node stringLiteral(Tokenizer tokenizer, String value) {
       return new Literal(value.substring(1, value.length()-1).replace("\"\"", "\""));
     }
   }

@@ -1,6 +1,10 @@
 package org.kobjects.expressionparser.demo.calculator;
 
 import org.kobjects.expressionparser.ExpressionParser;
+import org.kobjects.expressionparser.OperatorType;
+import org.kobjects.expressionparser.ParsingException;
+import org.kobjects.expressionparser.Processor;
+import org.kobjects.expressionparser.Tokenizer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,9 +21,9 @@ public class Calculator {
   /**
    * Processes the calls from the parser directly to a Double value.
    */
-  static class DoubleProcessor extends ExpressionParser.Processor<Double> {
+  static class DoubleProcessor extends Processor<Double> {
     @Override
-    public Double infixOperator(ExpressionParser.Tokenizer tokenizer, String name, Double left, Double right) {
+    public Double infixOperator(Tokenizer tokenizer, String name, Double left, Double right) {
       switch (name.charAt(0)) {
         case '+': return left + right;
         case '-': return left - right;
@@ -32,22 +36,22 @@ public class Calculator {
     }
 
     @Override
-    public Double implicitOperator(ExpressionParser.Tokenizer tokenizer, boolean strong, Double left, Double right) {
+    public Double implicitOperator(Tokenizer tokenizer, boolean strong, Double left, Double right) {
       return left * right;
     }
 
     @Override
-    public Double prefixOperator(ExpressionParser.Tokenizer tokenizer, String name, Double argument) {
+    public Double prefixOperator(Tokenizer tokenizer, String name, Double argument) {
       return name.equals("-") ? -argument : argument;
     }
 
     @Override
-    public Double numberLiteral(ExpressionParser.Tokenizer tokenizer, String value) {
+    public Double numberLiteral(Tokenizer tokenizer, String value) {
       return Double.parseDouble(value);
     }
 
     @Override
-    public Double identifier(ExpressionParser.Tokenizer tokenizer, String name) {
+    public Double identifier(Tokenizer tokenizer, String name) {
       Double value = variables.get(name);
       if (value == null) {
         throw new IllegalArgumentException("Undeclared variable: " + name);
@@ -56,7 +60,7 @@ public class Calculator {
     }
 
     @Override
-    public Double group(ExpressionParser.Tokenizer tokenizer, String paren, List<Double> elements) {
+    public Double group(Tokenizer tokenizer, String paren, List<Double> elements) {
       return elements.get(0);
     }
 
@@ -64,7 +68,7 @@ public class Calculator {
      * Delegates function calls to Math via reflection.
      */
     @Override
-    public Double call(ExpressionParser.Tokenizer tokenizer, String identifier, String bracket, List<Double> arguments) {
+    public Double call(Tokenizer tokenizer, String identifier, String bracket, List<Double> arguments) {
       if (arguments.size() == 1) {
         try {
           return (Double) Math.class.getMethod(
@@ -83,12 +87,12 @@ public class Calculator {
       ExpressionParser<Double> parser = new ExpressionParser<Double>(new DoubleProcessor());
       parser.addCallBrackets("(", ",", ")");
       parser.addGroupBrackets("(", null, ")");
-      parser.addOperators(ExpressionParser.OperatorType.INFIX_RTL, 4, "^");
-      parser.addOperators(ExpressionParser.OperatorType.PREFIX, 3, "+", "-");
+      parser.addOperators(OperatorType.INFIX_RTL, 4, "^");
+      parser.addOperators(OperatorType.PREFIX, 3, "+", "-");
       parser.setImplicitOperatorPrecedence(true, 2);
       parser.setImplicitOperatorPrecedence(false, 2);
-      parser.addOperators(ExpressionParser.OperatorType.INFIX, 1, "*", "/");
-      parser.addOperators(ExpressionParser.OperatorType.INFIX, 0, "+", "-");
+      parser.addOperators(OperatorType.INFIX, 1, "*", "/");
+      parser.addOperators(OperatorType.INFIX, 0, "+", "-");
       return parser;
     }
   }
@@ -108,7 +112,7 @@ public class Calculator {
       }
       try {
         System.out.println("Result:     " + parser.parse(input));
-      } catch (ExpressionParser.ParsingException e) {
+      } catch (ParsingException e) {
         char[] fill = new char[Math.max(e.end, e.start + 1)];
         Arrays.fill(fill, 0, e.start, '-');
         Arrays.fill(fill, e.start, Math.max(e.end, e.start + 1), '^');

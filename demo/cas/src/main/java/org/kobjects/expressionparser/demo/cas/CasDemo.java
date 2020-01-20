@@ -1,7 +1,7 @@
 package org.kobjects.expressionparser.demo.cas;
 
 import org.kobjects.expressionparser.ExpressionParser;
-import org.kobjects.expressionparser.ExpressionParser.ParsingException;
+import org.kobjects.expressionparser.ParsingException;
 import org.kobjects.expressionparser.demo.cas.string2d.String2d;
 import org.kobjects.expressionparser.demo.cas.tree.Node;
 
