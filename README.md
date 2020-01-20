@@ -52,6 +52,15 @@ Expression? | {A, B, C} \ {A, X, Y} |
 Result:     2
 ```
 
+Try it:
+
+``` 
+git clone https://github.com/stefanhaustein/expressionparser.git
+cd expressionparser
+gradle :demo:set:run
+``` 
+
+
 ## Tree building
 
 [TreeBuilder.java](demo/cas/src/main/java/org/kobjects/expressionparser/demo/cas/TreeBuilder.java) shows how to builds a tree from the input (using a [node factory](demo/cas/src/main/java/org/kobjects/expressionparser/demo/cas/tree/NodeFactory.java). The corresponding [demo app](demo/cas/src/main/java/org/kobjects/expressionparser/demo/cas/) is able to do simplifications and to compute the symbolic derivative. An extended tokenizer translates superscript digits.
@@ -79,6 +88,15 @@ Equals: ──
 Flat:   -1/x²
 
 ```
+
+Try it:
+
+``` 
+git clone https://github.com/stefanhaustein/expressionparser.git
+cd expressionparser
+gradle :demo:cas:run
+``` 
+
 
 ## Integration with a "main" parser
 
@@ -132,4 +150,12 @@ COMBAT AREA      CONDITION RED
 ---------------------------------
 COMMAND?
 ```
+
+Try it:
+
+``` 
+git clone https://github.com/stefanhaustein/expressionparser.git
+cd expressionparser
+gradle :demo:basic:run
+``` 
 
