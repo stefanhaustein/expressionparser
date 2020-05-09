@@ -75,16 +75,24 @@ public class Tokenizer {
     return  currentPosition - lastLineStart + 1;
   }
 
-  public TokenType consume(String expected) {
+  public TokenType consume(String expected, String errorMessage) {
     if (!tryConsume(expected)) {
-      throw exception("Expected: '" + expected + "'.", null);
+      throw exception(errorMessage, null);
     }
     return currentType;
   }
 
+  public TokenType consume(String expected) {
+    return consume(expected, "Expected: '" + expected + "'.");
+  }
+
   public String consumeIdentifier() {
+    return consumeIdentifier("Identifier expected!");
+  }
+
+  public String consumeIdentifier(String errorMessage) {
     if (currentType != TokenType.IDENTIFIER) {
-      throw exception("Identifier expected!", null);
+      throw exception(errorMessage, null);
     }
     String identifier = currentValue;
     nextToken();
