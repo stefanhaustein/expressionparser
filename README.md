@@ -1,5 +1,5 @@
 
-A simple [single-file](core/src/main/java/org/kobjects/expressionparser/ExpressionParser.java) configurable Java parser for mathematical expressions.
+A simple configurable Java [parser](core/src/main/java/org/kobjects/expressionparser/ExpressionParser.java) for mathematical expressions.
 
 # Gradle Build Integration
 
