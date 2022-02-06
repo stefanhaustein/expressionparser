@@ -1,32 +1,14 @@
+# ExpressionParser
 
 A simple configurable Java [parser](core/src/main/java/org/kobjects/expressionparser/ExpressionParser.java) for mathematical expressions.
 
 For a kotlin version, please refer to https://github.com/kobjects/parserlib
 
-# Gradle Build Integration
-
-Jitpack for the win!
-
-Step 1: Add jitpack to your root build.gradle at the end of repositories:
-
-    allprojects {
-		    repositories {
-			  ...
-			  maven { url 'https://jitpack.io' }
-		    }
-	    }
-
-Step 2: Add the expressionparser dependency
-
-	dependencies {
-		compile 'com.github.stefanhaustein.expressionparser:core:v1.0.0'
-	}
 
 
+## Examples and Demos
 
-# Examples and Demos
-
-## Immediate evaluation
+### Immediate evaluation
 
 [Calculator.java](demo/calculator/src/main/java/org/kobjects/expressionparser/demo/calculator/Calculator.java) in the demo package contains a simple self-contained use case directly interpreting the input.
 
@@ -63,7 +45,7 @@ gradle :demo:set:run
 ``` 
 
 
-## Tree building
+### Tree building
 
 [TreeBuilder.java](demo/cas/src/main/java/org/kobjects/expressionparser/demo/cas/TreeBuilder.java) shows how to builds a tree from the input (using a [node factory](demo/cas/src/main/java/org/kobjects/expressionparser/demo/cas/tree/NodeFactory.java). The corresponding [demo app](demo/cas/src/main/java/org/kobjects/expressionparser/demo/cas/) is able to do simplifications and to compute the symbolic derivative. An extended tokenizer translates superscript digits.
 
@@ -100,7 +82,7 @@ gradle :demo:cas:run
 ``` 
 
 
-## Integration with a "main" parser
+### Integration with a "main" parser
 
 The [BASIC demo parser](demo/basic/src/main/java/org/kobjects/expressionparser/demo/basic/Parser.java) is able to parse 70's BASIC programs. The rest of the [BASIC demo directory](src/main/java/org/kobjects/expressionparser/demo/basic/) contains some code to run them.
 
@@ -160,4 +142,24 @@ git clone https://github.com/stefanhaustein/expressionparser.git
 cd expressionparser
 gradle :demo:basic:run
 ``` 
+
+## Gradle Build Integration
+
+Jitpack for the win!
+
+Step 1: Add jitpack to your root build.gradle at the end of repositories:
+
+    allprojects {
+		    repositories {
+			  ...
+			  maven { url 'https://jitpack.io' }
+		    }
+	    }
+
+Step 2: Add the expressionparser dependency
+
+	dependencies {
+		compile 'com.github.stefanhaustein.expressionparser:core:v1.0.0'
+	}
+
 
