@@ -2,7 +2,7 @@
 
 A simple configurable Java [parser](core/src/main/java/org/kobjects/expressionparser/ExpressionParser.java) for mathematical expressions.
 
-For a kotlin version, please refer to https://github.com/kobjects/parserlib
+For a kotlin version, please refer to https://github.com/kobjects/parsek
 
 
 
